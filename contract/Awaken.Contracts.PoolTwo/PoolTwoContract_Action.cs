@@ -425,6 +425,7 @@ namespace Awaken.Contracts.PoolTwoContract
                 {
                     throw new AssertionException($"Failed to parse {blockEndStr}");
                 }
+                reward = new BigIntValue(0);
             }
         }
     }

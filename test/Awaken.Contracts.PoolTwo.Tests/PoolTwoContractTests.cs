@@ -401,7 +401,7 @@ namespace Awaken.Contracts.PoolTwo
             var farmPoolOne = await ownerStub.FarmPoolOne.CallAsync(new Empty());
             farmPoolOne.ShouldBe(PoolOneMock);
 
-            var endBlock = await ownerStub.endBlock.CallAsync(new Empty());
+            var endBlock = await ownerStub.EndBlock.CallAsync(new Empty());
             ShouldBeTestExtensions.ShouldBe(endBlock.Value, 2050);
         }
 

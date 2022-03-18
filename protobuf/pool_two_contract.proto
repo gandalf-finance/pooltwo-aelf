@@ -105,7 +105,7 @@ service PoolTwoContract {
     option (aelf.is_view) = true;
   }
 
-  rpc endBlock(google.protobuf.Empty) returns(google.protobuf.Int64Value){
+  rpc EndBlock(google.protobuf.Empty) returns(google.protobuf.Int64Value){
     option (aelf.is_view) = true;
   }
   

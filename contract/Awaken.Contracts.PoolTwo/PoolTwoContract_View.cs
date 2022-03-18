@@ -232,7 +232,7 @@ namespace Awaken.Contracts.PoolTwoContract
         /**
          * endBlock
          */
-        public override Int64Value endBlock(Empty input)
+        public override Int64Value EndBlock(Empty input)
         {
             return new Int64Value
             {

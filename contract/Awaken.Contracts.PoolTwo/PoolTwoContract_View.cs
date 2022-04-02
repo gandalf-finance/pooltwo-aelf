@@ -65,8 +65,7 @@ namespace Awaken.Contracts.PoolTwoContract
          *  Pending
          */
         public override BigIntValue Pending(PendingInput input)
-        {   
-            Assert(State.PoolInfo.Value.PoolList.Count<=input.Pid+1,"Pool not exist.");
+        {
             var pool = State.PoolInfo.Value.PoolList[input.Pid];
             var user = State.UserInfo[input.Pid][input.User] ?? new UserInfoStruct
             {

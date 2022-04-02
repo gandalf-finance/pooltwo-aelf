@@ -11,7 +11,7 @@ namespace Awaken.Contracts.PoolTwoContract
         public override Empty SetLpTokenAddress(SetLpTokenAddressInput input)
         {   
             AssertSenderIsOwner();
-            Assert(input.AwakenTokenContractAddress!=null,"Invalid input.");
+            Assert(input.AwakenTokenContractAddress!=null&&!new Address().Equals(input.AwakenTokenContractAddress),"Invalid input.");
             State.LpTokenContract.Value = input.AwakenTokenContractAddress;
             return new Empty();
         }

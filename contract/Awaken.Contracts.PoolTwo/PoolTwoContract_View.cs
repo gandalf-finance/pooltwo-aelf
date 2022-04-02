@@ -6,8 +6,7 @@ using Google.Protobuf.WellKnownTypes;
 namespace Awaken.Contracts.PoolTwoContract
 {
     public partial class PoolTwoContract
-    {   
-        
+    {
         /**
          * TotalReward
          */
@@ -66,9 +65,14 @@ namespace Awaken.Contracts.PoolTwoContract
          *  Pending
          */
         public override BigIntValue Pending(PendingInput input)
-        {
+        {   
+            Assert(State.PoolInfo.Value.PoolList.Count<=input.Pid+1,"Pool not exist.");
             var pool = State.PoolInfo.Value.PoolList[input.Pid];
-            var user = State.UserInfo[input.Pid][input.User];
+            var user = State.UserInfo[input.Pid][input.User] ?? new UserInfoStruct
+            {
+                Amount = 0,
+                RewardDebt = 0
+            };
             var accDistributeTokenPerShare = pool.AccDistributeTokenPerShare;
             var lpSupply = pool.TotalAmount;
             if (user.Amount > 0)
@@ -198,7 +202,7 @@ namespace Awaken.Contracts.PoolTwoContract
         {
             return State.UserInfo[input.Pid][input.User];
         }
-        
+
         /**
          * DistributeTokenPerBlock
          */
@@ -206,7 +210,7 @@ namespace Awaken.Contracts.PoolTwoContract
         {
             return State.DistributeTokenPerBlock.Value;
         }
-        
+
         /**
          *  TotalAllocPoint
          */
@@ -216,8 +220,8 @@ namespace Awaken.Contracts.PoolTwoContract
             {
                 Value = State.TotalAllocPoint.Value
             };
-        }   
-        
+        }
+
         /**
          * StartBlock
          */
@@ -228,7 +232,7 @@ namespace Awaken.Contracts.PoolTwoContract
                 Value = State.StartBlock.Value
             };
         }
-        
+
         /**
          * endBlock
          */

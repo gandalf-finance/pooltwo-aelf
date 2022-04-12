@@ -112,6 +112,14 @@ service PoolTwoContract {
   rpc DistributeTokenPerBlock(google.protobuf.Empty) returns(aelf.BigIntValue){
     option (aelf.is_view) = true;
   }
+  
+  rpc RedepositAdjustFlag(google.protobuf.Empty) returns(google.protobuf.BoolValue){
+    option (aelf.is_view) = true;
+  } 
+  
+  rpc RedepositStartBlock(google.protobuf.Empty) returns(google.protobuf.Int64Value){
+    option (aelf.is_view) = true;
+  }
 }
 
 //Input&Output
@@ -165,6 +173,7 @@ message InitializeInput{
   aelf.BigIntValue  total_reward = 5;
   aelf.Address owner = 6;
   aelf.Address awaken_token_contract =7;
+  int64 redeposit_start_block=8;
 }
 
 

@@ -10,6 +10,9 @@ namespace Awaken.Contracts.PoolTwoContract
     {
         public SingletonState<Address> Owner { get; set; }
         public Int64State StartBlock { get; set; }
+        
+        public Int64State RedepositStartBlock { get; set; }
+        public BoolState RedepositAdjustFlag { get; set; }
         public Int64State EndBlock { get; set; }
         public StringState DistributeToken { get; set; }
         public SingletonState<BigIntValue> DistributeTokenPerBlock { get; set; }

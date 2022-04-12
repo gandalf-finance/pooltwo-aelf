@@ -106,9 +106,43 @@ namespace Awaken.Contracts.PoolTwoContract
          */
         public override BigIntValue GetDistributeTokenBlockReward(Int64Value input)
         {
-            return GetDistributeTokenBlockReward(input.Value);
+            // return GetDistributeTokenBlockReward(input.Value);
+            var rewardBlock = Context.CurrentHeight > State.EndBlock.Value
+                ? State.EndBlock.Value
+                : Context.CurrentHeight;
+            return GetDistributeTokenBlockReward(input.Value, rewardBlock);
         }
+        
+        private BigIntValue GetDistributeTokenBlockReward(long lastRewardBlock, long rewardBlock)
+        {
+            var blockReward = new BigIntValue(0);
+            if (rewardBlock <= lastRewardBlock)
+            {
+                return new BigIntValue(0);
+            }
+            var n = Phase(lastRewardBlock).Value;
+            var m = Phase(rewardBlock).Value;
+            while (n < m)
+            {
+                n++;
+                var r = n.Mul(State.HalvingPeriod.Value).Add(State.StartBlock.Value);
+                blockReward = blockReward.Add(
+                    Reward(new Int64Value
+                    {
+                        Value = r
+                    }).Mul((r.Sub(lastRewardBlock).ToString()))
+                );
+                lastRewardBlock = r;
+            }
 
+            blockReward = blockReward.Add(
+                Reward(new Int64Value
+                {
+                    Value = rewardBlock
+                }).Mul(rewardBlock.Sub(lastRewardBlock))
+            );
+            return blockReward;
+        }
 
         private BigIntValue GetDistributeTokenBlockReward(long lastRewardBlock)
         {
@@ -240,6 +274,22 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Int64Value
             {
                 Value = State.EndBlock.Value
+            };
+        }
+
+        public override Int64Value RedepositStartBlock(Empty input)
+        {
+            return new Int64Value
+            {
+                Value = State.RedepositStartBlock.Value
+            };
+        }
+
+        public override BoolValue RedepositAdjustFlag(Empty input)
+        {
+            return new BoolValue
+            {
+                Value = State.RedepositAdjustFlag.Value
             };
         }
     }

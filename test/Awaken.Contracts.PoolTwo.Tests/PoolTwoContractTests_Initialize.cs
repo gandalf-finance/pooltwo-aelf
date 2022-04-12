@@ -51,7 +51,8 @@ namespace Awaken.Contracts.PoolTwo
                 StartBlock = 50,
                 TotalReward = 9375000,
                 DistributeTokenPerBlock = 10000,
-                AwakenTokenContract = LpTokenContractAddress
+                AwakenTokenContract = LpTokenContractAddress,
+                RedepositStartBlock = 300
             });
             
             await InitLpTokenContract();

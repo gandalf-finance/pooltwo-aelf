@@ -16,15 +16,17 @@ namespace Awaken.Contracts.PoolTwoContract
         
         public override Empty Initialize(InitializeInput input)
         {
-
             Assert(State.Owner.Value == null, "Already initialized.");
             State.Owner.Value = input.Owner == null || input.Owner.Value.IsNullOrEmpty() ? Context.Sender : input.Owner;
-            Assert(input.StartBlock >= Context.CurrentHeight,"Invalid StartBlock");
+            Assert(input.StartBlock >= Context.CurrentHeight,"Invalid StartBlock.");
             State.DistributeToken.Value = input.DistributeToken;
             State.DistributeTokenPerBlock.Value = input.DistributeTokenPerBlock;
             State.HalvingPeriod.Value = input.HalvingPeriod;
             State.StartBlock.Value = input.StartBlock;
+            Assert(input.RedepositStartBlock>=State.StartBlock.Value,"Invalid Redeposit StartBlock.");
+            State.RedepositStartBlock.Value = input.RedepositStartBlock;
             State.TotalReward.Value = input.TotalReward;
+            State.RedepositAdjustFlag.Value = false;
             State.IssuedReward.Value = new BigIntValue(0);
             State.TokenContract.Value =
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);

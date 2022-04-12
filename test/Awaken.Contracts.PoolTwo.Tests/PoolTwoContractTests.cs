@@ -7,6 +7,7 @@ using Awaken.Contracts.PoolTwoContract;
 using Google.Protobuf.WellKnownTypes;
 using Shouldly;
 using Xunit;
+using ApproveInput = Awaken.Contracts.Token.ApproveInput;
 
 namespace Awaken.Contracts.PoolTwo
 {
@@ -16,6 +17,194 @@ namespace Awaken.Contracts.PoolTwo
         public async Task Init()
         {
             await Initialize();
+        }
+        
+        [Fact]
+        public async Task Redeposit_Pool_Lagging_Start()
+        {
+            var ownerStub = await Initialize();
+            await AddPoolFunc(ownerStub, 10, LPTOKEN_01, false);
+            await AddPoolFunc(ownerStub, 150, LPTOKEN_01, true);
+            long reDepositStartBlock = 300;
+
+            await ownerStub.SetFarmPoolOne.SendAsync(PoolOneMock);
+            
+            var tomPoolStub = GetPoolTwoContractStub(TomPair);
+            var tomLpTokenStub = GetLpTokenContractStub(TomPair);
+            var poolOnePoolContractStub = GetPoolTwoContractStub(PoolOneMockPair);
+            var poolOneLpContractStub = GetLpTokenContractStub(PoolOneMockPair);
+            var tomTokenContractStub = GetTokenContractStub(TomPair);
+
+
+            await tomLpTokenStub.Approve.SendAsync(new ApproveInput
+            {
+                Amount = 1000000,
+                Spender = DAppContractAddress,
+                Symbol = LPTOKEN_01
+            });
+
+           
+            await tomPoolStub.Deposit.SendAsync(new DepositInput
+            {
+                Amount = 1000000,
+                Pid = 1
+            });
+            var currentBlockHeight = await GetCurrentBlockHeight();
+            var skipBlock = reDepositStartBlock.Sub(currentBlockHeight);
+
+            var endBlockCallAsync = await ownerStub.EndBlock.CallAsync(new Empty());
+            endBlockCallAsync.Value.ShouldBe(500*4+50);
+
+
+            await ownerStub.FixEndBlock.SendAsync(new BoolValue
+            {
+                Value = true
+            });
+
+
+            var redepositAdjustFlag = await ownerStub.RedepositAdjustFlag.CallAsync(new Empty());
+            redepositAdjustFlag.Value.ShouldBe(false);
+            
+            await SkipBlocks(skipBlock);
+            await poolOneLpContractStub.Approve.SendAsync(new ApproveInput
+            {
+                Amount = 2000000,
+                Spender = DAppContractAddress,
+                Symbol = LPTOKEN_01
+            });
+            
+            await poolOnePoolContractStub.ReDeposit.SendAsync(new ReDepositInput
+            {
+                Amount = 2000000,
+                User = Tom
+            });
+
+            await ownerStub.FixEndBlock.SendAsync(new BoolValue
+            {
+                Value = true
+            });
+
+            {
+                var callAsync = await ownerStub.RedepositAdjustFlag.CallAsync(new Empty());
+                callAsync.Value.ShouldBe(true);
+
+                var blockCallAsync = await ownerStub.EndBlock.CallAsync(new Empty());
+                blockCallAsync.Value.ShouldBe(2556L);
+            }
+            {
+                var balanceCallAsync = tomTokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+                {
+                    Owner = DAppContractAddress,
+                    Symbol = DISTRIBUTETOKEN
+                });
+                balanceCallAsync.Result.Balance.ShouldBe(9375000);
+            }
+
+
+            await tomLpTokenStub.Approve.SendAsync(new ApproveInput
+            {
+                Amount = 2000000,
+                Spender = DAppContractAddress,
+                Symbol = LPTOKEN_01
+            });
+            
+            
+            await tomPoolStub.Deposit.SendAsync(new DepositInput
+            {
+                Amount = 2000000,
+                Pid = 1
+            });
+            
+            {
+                var balanceCallAsync = tomTokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+                {
+                    Owner = DAppContractAddress,
+                    Symbol = DISTRIBUTETOKEN
+                });
+                balanceCallAsync.Result.Balance.ShouldBe(6975000);
+            }
+            {
+                var blockHeight = await GetCurrentBlockHeight();
+                var skipBlocks = 2050 - blockHeight;
+                await SkipBlocks(skipBlocks);
+
+                await tomLpTokenStub.Approve.SendAsync(new ApproveInput
+                {
+                    Amount = 3000000,
+                    Spender = DAppContractAddress,
+                    Symbol = LPTOKEN_01
+                });
+
+                await tomPoolStub.Deposit.SendAsync(new DepositInput
+                {
+                    Amount = 3000000,
+                    Pid = 1
+                });
+
+                await poolOneLpContractStub.Approve.SendAsync(new ApproveInput
+                {
+                    Amount = 1000000,
+                    Spender = DAppContractAddress,
+                    Symbol = LPTOKEN_01
+                });
+
+                await poolOnePoolContractStub.ReDeposit.SendAsync(new ReDepositInput
+                {
+                    Amount = 1000000,
+                    User = Tom
+                });
+                
+                
+                var balanceCallAsync = tomTokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+                {
+                    Owner = DAppContractAddress,
+                    Symbol = DISTRIBUTETOKEN
+                });
+                balanceCallAsync.Result.Balance.ShouldBeGreaterThan(0);
+            }
+
+            {
+                var blockHeight = await GetCurrentBlockHeight();
+                var skipsBlock = 2556L - blockHeight;
+                var skipBlocks = await SkipBlocks(skipsBlock);
+                skipBlocks.ShouldBe(2556L);
+
+                {
+                    await tomPoolStub.Withdraw.SendAsync(new WithdrawInput
+                    {
+                        Amount = 1000000,
+                        Pid = 1
+                    });
+
+                    {
+                        var callAsync = await tomLpTokenStub.GetBalance.CallAsync(new Token.GetBalanceInput
+                        {
+                            Owner = DAppContractAddress,
+                            Symbol = LPTOKEN_01
+                        });
+                        
+                        callAsync.Amount.ShouldBeGreaterThan(1000000);
+                    }
+
+                    await tomPoolStub.Withdraw.SendAsync(new WithdrawInput
+                    {
+                        Amount = 1000000,
+                        Pid = 0
+                    });
+                    
+
+                    {
+                        var balanceCallAsync = tomTokenContractStub.GetBalance.CallAsync(new GetBalanceInput
+                        {
+                            Owner = DAppContractAddress,
+                            Symbol = DISTRIBUTETOKEN
+                        });
+                        balanceCallAsync.Result.Balance.ShouldBe(0);
+                    }
+                }
+
+            }
+
         }
         
         [Fact]
@@ -58,10 +247,12 @@ namespace Awaken.Contracts.PoolTwo
             var tomPoolTwoStub = GetPoolTwoContractStub(TomPair);
             var userInfo = await tomPoolTwoStub.UserInfo.CallAsync(new UserInfoInput
             {
-                Pid = 0,
+                Pid = 1,
                 User = Tom
             });
             userInfo.Amount.ShouldBe(10000000);
+            
+            
         }
         
         [Fact]

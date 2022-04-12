@@ -9,9 +9,10 @@ namespace Awaken.Contracts.PoolTwoContract
     public partial class PoolTwoContract
     {
         public override Empty SetLpTokenAddress(SetLpTokenAddressInput input)
-        {   
+        {
             AssertSenderIsOwner();
-            Assert(input.AwakenTokenContractAddress!=null&&!new Address().Equals(input.AwakenTokenContractAddress),"Invalid input.");
+            Assert(input.AwakenTokenContractAddress != null && !new Address().Equals(input.AwakenTokenContractAddress),
+                "Invalid input.");
             State.LpTokenContract.Value = input.AwakenTokenContractAddress;
             return new Empty();
         }
@@ -24,7 +25,7 @@ namespace Awaken.Contracts.PoolTwoContract
             WithdrawDistributeToken(input.Pid, input.Amount, Context.Sender);
             return new Empty();
         }
-        
+
         private void WithdrawDistributeToken(int pid, BigIntValue amount, Address sender)
         {
             var pool = State.PoolInfo.Value.PoolList[pid];
@@ -100,6 +101,7 @@ namespace Awaken.Contracts.PoolTwoContract
         public override Empty ReDeposit(ReDepositInput input)
         {
             Assert(Context.Sender == State.FarmPoolOne.Value, "Invalid sender");
+            Assert(Context.CurrentHeight>=State.RedepositStartBlock.Value,"Re-Deposit not started.");
             DepositDistributeToken(0, input.Amount, input.User);
             return new Empty();
         }
@@ -183,12 +185,15 @@ namespace Awaken.Contracts.PoolTwoContract
                 throw new AssertionException($"Failed to parse {amount.Value}");
             }
 
-            State.TokenContract.Transfer.Send(new TransferInput
+            if (amount>0)
             {
-                To = to,
-                Amount = parseOut,
-                Symbol = State.DistributeToken.Value
-            });
+                State.TokenContract.Transfer.Send(new TransferInput
+                {
+                    To = to,
+                    Amount = parseOut,
+                    Symbol = State.DistributeToken.Value
+                });
+            }
         }
 
         /**
@@ -206,7 +211,10 @@ namespace Awaken.Contracts.PoolTwoContract
                 State.TotalAllocPoint.Value - State.PoolInfo.Value.PoolList[input.Pid].AllocPoint + input.AllocPoint;
 
             State.PoolInfo.Value.PoolList[input.Pid].AllocPoint = input.AllocPoint;
-            State.DistributeTokenPerBlock.Value = input.NewPerBlock;
+            if (input.NewPerBlock!=null||input.NewPerBlock!=new BigIntValue())
+            {
+                State.DistributeTokenPerBlock.Value = input.NewPerBlock;
+            }
             Context.Fire(new WeightSet
             {
                 Pid = input.Pid,
@@ -371,9 +379,26 @@ namespace Awaken.Contracts.PoolTwoContract
             }
 
             var restReward = State.TotalReward.Value.Sub(State.IssuedReward.Value);
+
+            if (!State.RedepositAdjustFlag.Value && Context.CurrentHeight >= State.RedepositStartBlock.Value)
+            {
+                var unDividendAmount = ComputationRedepositPoolUnDividendAmount();
+                restReward=restReward.Add(unDividendAmount);
+                State.RedepositAdjustFlag.Value = true;
+            }
+
             var blockHeightEnd = GetEndBlock(restReward);
             State.EndBlock.Value = blockHeightEnd;
             return new Empty();
+        }
+        
+        private BigIntValue ComputationRedepositPoolUnDividendAmount()
+        {
+            var pool = State.PoolInfo.Value.PoolList[0];
+            var distributeTokenBlockReward =
+                GetDistributeTokenBlockReward(State.StartBlock.Value, State.RedepositStartBlock.Value);
+            var poolUnDividendAmount = distributeTokenBlockReward.Mul(pool.AllocPoint).Div(State.TotalAllocPoint.Value);
+            return poolUnDividendAmount;
         }
 
         private long GetEndBlock(BigIntValue restReward)
@@ -409,7 +434,7 @@ namespace Awaken.Contracts.PoolTwoContract
                 reward = 0;
                 return;
             }
-
+            
             Assert(tmp > 0, "Error");
             reward = new BigIntValue(0);
             reward = tmp.Mul(endRewardBlock.Sub(blockHeightBegin));
@@ -425,6 +450,7 @@ namespace Awaken.Contracts.PoolTwoContract
                 {
                     throw new AssertionException($"Failed to parse {blockEndStr}");
                 }
+
                 reward = new BigIntValue(0);
             }
         }

@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AElf.Contracts.MultiToken;
+using AElf.ContractTestKit;
 using AElf.CSharp.Core;
 using AElf.Types;
 using Awaken.Contracts.PoolTwoContract;
@@ -17,6 +19,97 @@ namespace Awaken.Contracts.PoolTwo
         public async Task Init()
         {
             await Initialize();
+        }
+        
+        [Fact]
+        public async Task Redeposit_Pool_Test()
+        {
+            OwnerPair = SampleAccount.Accounts.First().KeyPair;
+            Owner = Address.FromPublicKey(OwnerPair.PublicKey);
+            TomPair = SampleAccount.Accounts[1].KeyPair;
+            Tom = Address.FromPublicKey(TomPair.PublicKey);
+            PoolOneMockPair = SampleAccount.Accounts[2].KeyPair;
+            PoolOneMock = Address.FromPublicKey(PoolOneMockPair.PublicKey);
+            var stub = GetPoolTwoContractStub(OwnerPair);
+
+            long redepositStartBlock = 513;
+            await stub.Initialize.SendAsync(new InitializeInput
+            {
+                Owner = Owner,
+                DistributeToken = DISTRIBUTETOKEN,
+                HalvingPeriod = 180,
+                StartBlock = 453,
+                TotalReward = 3375000,
+                DistributeTokenPerBlock = 10000,
+                AwakenTokenContract = LpTokenContractAddress,
+                RedepositStartBlock = redepositStartBlock
+            });
+            
+            await InitLpTokenContract();
+            await CreateToken();
+
+            await AddPoolFunc(stub, 1, LPTOKEN_01, false);
+            await AddPoolFunc(stub, 2, LPTOKEN_01, true);
+            var tomPoolStub = GetPoolTwoContractStub(TomPair);
+            var tomLpTokenStub = GetLpTokenContractStub(TomPair);
+            var poolOneLpContractStub = GetLpTokenContractStub(PoolOneMockPair);
+            var poolOnePoolContractStub = GetPoolTwoContractStub(PoolOneMockPair);
+            
+            await stub.SetFarmPoolOne.SendAsync(PoolOneMock);
+
+            await tomLpTokenStub.Approve.SendAsync(new ApproveInput
+            {
+                Amount = 1000000,
+                Spender = DAppContractAddress,
+                Symbol = LPTOKEN_01
+            });
+            
+            await tomPoolStub.Deposit.SendAsync(new DepositInput
+            {
+                Amount = 1000000,
+                Pid = 1
+            });
+            var currentBlockHeight = await GetCurrentBlockHeight();
+            var skipBlock = redepositStartBlock.Sub(currentBlockHeight);
+            var endBlockCallAsync = await stub.EndBlock.CallAsync(new Empty());
+            endBlockCallAsync.Value.ShouldBe(1173);
+            
+            await stub.FixEndBlock.SendAsync(new BoolValue
+            {
+                Value = true
+            });
+            var redepositAdjustFlag = await stub.RedepositAdjustFlag.CallAsync(new Empty());
+            redepositAdjustFlag.Value.ShouldBe(false);
+            await SkipBlocks(skipBlock);
+            {
+                var blockCallAsync = await stub.EndBlock.CallAsync(new Empty());
+                blockCallAsync.Value.ShouldBe(1173);
+            }
+            
+            await stub.FixEndBlock.SendAsync(new BoolValue
+            {
+                Value = true
+            });
+            {
+                var callAsync = await stub.RedepositAdjustFlag.CallAsync(new Empty());
+                callAsync.Value.ShouldBe(true);
+                var blockCallAsync = await stub.EndBlock.CallAsync(new Empty());
+                blockCallAsync.Value.ShouldBe(3153L);
+            }
+            
+            await poolOneLpContractStub.Approve.SendAsync(new ApproveInput
+            {
+                Amount = 2000000,
+                Spender = DAppContractAddress,
+                Symbol = LPTOKEN_01
+            });
+            
+            await poolOnePoolContractStub.ReDeposit.SendAsync(new ReDepositInput
+            {
+                Amount = 2000000,
+                User = Tom
+            });
+           
         }
         
         [Fact]
@@ -191,7 +284,11 @@ namespace Awaken.Contracts.PoolTwo
                         Amount = 1000000,
                         Pid = 0
                     });
-                    
+
+                    {
+                        var blockCallAsync = await tomPoolStub.EndBlock.CallAsync(new Empty());
+                        blockCallAsync.Value.ShouldBe(0);
+                    }
 
                     {
                         var balanceCallAsync = tomTokenContractStub.GetBalance.CallAsync(new GetBalanceInput

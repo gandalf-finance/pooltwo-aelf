@@ -56,7 +56,6 @@ namespace Awaken.Contracts.PoolTwo
             });
             
             await InitLpTokenContract();
-            
             await CreateToken();
             return stub;
         }

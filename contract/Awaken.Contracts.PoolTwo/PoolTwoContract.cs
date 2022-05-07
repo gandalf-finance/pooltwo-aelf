@@ -5,10 +5,9 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Awaken.Contracts.PoolTwoContract
 {
+    
     /// <summary>
-    /// The C# implementation of the contract defined in pool_two_contract.proto that is located in the "protobuf"
-    /// folder.
-    /// Notice that it inherits from the protobuf generated code. 
+    /// Contract Initialize method.
     /// </summary>
     public partial class PoolTwoContract : PoolTwoContractContainer.PoolTwoContractBase
     {
@@ -40,7 +39,9 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
         
-        
+        /// <summary>
+        /// Authority guard
+        /// </summary>
         private void AssertSenderIsOwner()
         {
             Assert(State.Owner.Value != null, "Contract not initialized.");

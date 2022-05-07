@@ -7,25 +7,32 @@ namespace Awaken.Contracts.PoolTwoContract
 {
     public partial class PoolTwoContract
     {
-        /**
-         * TotalReward
-         */
+        
+        /// <summary>
+        /// Get total reward.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override BigIntValue TotalReward(Empty input)
         {
             return State.TotalReward.Value;
         }
 
-        /**
-         * IssuedReward
-         */
+        /// <summary>
+        /// Get issued reward.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override BigIntValue IssuedReward(Empty input)
         {
             return State.IssuedReward.Value;
         }
 
-        /**
-         * DistributeToken
-         */
+        /// <summary>
+        /// Get distribute token.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override StringValue DistributeToken(Empty input)
         {
             return new StringValue
@@ -34,9 +41,11 @@ namespace Awaken.Contracts.PoolTwoContract
             };
         }
 
-        /**
-         * HalvingPeriod
-         */
+        /// <summary>
+        /// Get halving period
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Int64Value HalvingPeriod(Empty input)
         {
             return new Int64Value
@@ -45,25 +54,31 @@ namespace Awaken.Contracts.PoolTwoContract
             };
         }
 
-        /**
-         *  FarmPoolOne
-         */
+       /// <summary>
+       /// Get farm pool one contract address.
+       /// </summary>
+       /// <param name="input"></param>
+       /// <returns></returns>
         public override Address FarmPoolOne(Empty input)
         {
             return State.FarmPoolOne.Value;
         }
 
-        /**
-         *  PoolInfo
-         */
+        /// <summary>
+        ///  Get pool info by pool index.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override PoolInfoStruct PoolInfo(Int32Value input)
         {
             return State.PoolInfo.Value.PoolList[input.Value];
         }
 
-        /**
-         *  Pending
-         */
+        /// <summary>
+        /// Get pending reward of user.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override BigIntValue Pending(PendingInput input)
         {
             var pool = State.PoolInfo.Value.PoolList[input.Pid];
@@ -101,9 +116,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new BigIntValue(0);
         }
 
-        /**
-         *  GetDistributeTokenBlockReward
-         */
+       /// <summary>
+       /// Get distribute toke nblock reward.
+       /// </summary>
+       /// <param name="input"></param>
+       /// <returns></returns>
         public override BigIntValue GetDistributeTokenBlockReward(Int64Value input)
         {
             // return GetDistributeTokenBlockReward(input.Value);
@@ -179,18 +196,22 @@ namespace Awaken.Contracts.PoolTwoContract
             return blockReward;
         }
 
-        /**
-         *  Reward
-         */
+        /// <summary>
+        /// Get reward.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override BigIntValue Reward(Int64Value input)
         {
             var phase = Phase(input);
             return State.DistributeTokenPerBlock.Value.Div(1 << Convert.ToInt32(phase.Value));
         }
 
-        /**
-         *  Phase
-         */
+       /// <summary>
+       /// Get current periods.
+       /// </summary>
+       /// <param name="input"></param>
+       /// <returns></returns>
         public override Int64Value Phase(Int64Value input)
         {
             return Phase(input.Value);
@@ -217,9 +238,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Int64Value();
         }
 
-        /**
-         *  PoolLength
-         */
+     /// <summary>
+     /// Get pool length.
+     /// </summary>
+     /// <param name="input"></param>
+     /// <returns></returns>
         public override Int64Value PoolLength(Empty input)
         {
             return new Int64Value
@@ -228,25 +251,31 @@ namespace Awaken.Contracts.PoolTwoContract
             };
         }
 
-        /**
-         *  UserInfo
-         */
+        /// <summary>
+        /// Get user info by address.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override UserInfoStruct UserInfo(UserInfoInput input)
         {
             return State.UserInfo[input.Pid][input.User];
         }
 
-        /**
-         * DistributeTokenPerBlock
-         */
+        /// <summary>
+        /// Get distribute token per block.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override BigIntValue DistributeTokenPerBlock(Empty input)
         {
             return State.DistributeTokenPerBlock.Value;
         }
 
-        /**
-         *  TotalAllocPoint
-         */
+        /// <summary>
+        /// Get total alloc point.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Int64Value TotalAllocPoint(Empty input)
         {
             return new Int64Value
@@ -255,9 +284,11 @@ namespace Awaken.Contracts.PoolTwoContract
             };
         }
 
-        /**
-         * StartBlock
-         */
+       /// <summary>
+       /// Get start block.
+       /// </summary>
+       /// <param name="input"></param>
+       /// <returns></returns>
         public override Int64Value StartBlock(Empty input)
         {
             return new Int64Value
@@ -266,9 +297,11 @@ namespace Awaken.Contracts.PoolTwoContract
             };
         }
 
-        /**
-         * endBlock
-         */
+        /// <summary>
+        /// Get end block.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Int64Value EndBlock(Empty input)
         {
             return new Int64Value
@@ -276,7 +309,12 @@ namespace Awaken.Contracts.PoolTwoContract
                 Value = State.EndBlock.Value
             };
         }
-
+        
+        /// <summary>
+        /// Get redeposit start block number.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Int64Value RedepositStartBlock(Empty input)
         {
             return new Int64Value
@@ -284,7 +322,12 @@ namespace Awaken.Contracts.PoolTwoContract
                 Value = State.RedepositStartBlock.Value
             };
         }
-
+        
+        /// <summary>
+        /// Get redeposit adjust flag.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override BoolValue RedepositAdjustFlag(Empty input)
         {
             return new BoolValue

@@ -7,7 +7,12 @@ using Google.Protobuf.WellKnownTypes;
 namespace Awaken.Contracts.PoolTwoContract
 {
     public partial class PoolTwoContract
-    {
+    {   
+        /// <summary>
+        /// Set lptoken contract address, only owner.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty SetLpTokenAddress(SetLpTokenAddressInput input)
         {
             AssertSenderIsOwner();
@@ -17,9 +22,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-        /**
-         * withdraw
-         */
+        /// <summary>
+        /// Withdraw 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty Withdraw(WithdrawInput input)
         {
             WithdrawDistributeToken(input.Pid, input.Amount, Context.Sender);
@@ -85,9 +92,11 @@ namespace Awaken.Contracts.PoolTwoContract
             });
         }
 
-        /**
-         * deposit
-         */
+        /// <summary>
+        /// Deposit
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty Deposit(DepositInput input)
         {
             Assert(input.Pid == 1, "Invalid pid");
@@ -95,9 +104,12 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-        /**
-         * ReDeposit
-         */
+        
+        /// <summary>
+        /// ReDeposit
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty ReDeposit(ReDepositInput input)
         {
             Assert(Context.Sender == State.FarmPoolOne.Value, "Invalid sender");
@@ -196,9 +208,11 @@ namespace Awaken.Contracts.PoolTwoContract
             }
         }
 
-        /**
-         *  Set
-         */
+        /// <summary>
+        /// Set pool's allocPoint and distribute token per block.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty Set(SetInput input)
         {
             AssertSenderIsOwner();
@@ -211,7 +225,7 @@ namespace Awaken.Contracts.PoolTwoContract
                 State.TotalAllocPoint.Value - State.PoolInfo.Value.PoolList[input.Pid].AllocPoint + input.AllocPoint;
 
             State.PoolInfo.Value.PoolList[input.Pid].AllocPoint = input.AllocPoint;
-            if (input.NewPerBlock!=null||input.NewPerBlock!=new BigIntValue())
+            if (input.NewPerBlock!=null||!input.NewPerBlock.Equals(new BigIntValue()))
             {
                 State.DistributeTokenPerBlock.Value = input.NewPerBlock;
             }
@@ -228,9 +242,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-        /**
-         *  Add
-         */
+        /// <summary>
+        /// Add Pool.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty Add(AddInput input)
         {
             AssertSenderIsOwner();
@@ -264,9 +280,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-        /**
-         *  SetDistributeTokenPerBlock
-         */
+        /// <summary>
+        /// Set distribute token per block.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty SetDistributeTokenPerBlock(Int64Value input)
         {
             AssertSenderIsOwner();
@@ -275,9 +293,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-        /**
-         * 
-         */
+        /// <summary>
+        /// Mass update pool info.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty MassUpdatePools(Empty input)
         {
             var length = State.PoolInfo.Value.PoolList.Count;
@@ -289,7 +309,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-
+        /// <summary>
+        /// Update pool info by pool index.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty UpdatePool(Int32Value input)
         {
             return UpdatePool(input.Value);
@@ -343,9 +367,11 @@ namespace Awaken.Contracts.PoolTwoContract
         }
 
 
-        /**
-         * 
-         */
+        /// <summary>
+        /// Set farm pool one contract address  method.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty SetFarmPoolOne(Address input)
         {
             AssertSenderIsOwner();
@@ -353,9 +379,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-        /**
-         * 
-         */
+        /// <summary>
+        /// Set Half decay period.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty SetHalvingPeriod(Int64Value input)
         {
             AssertSenderIsOwner();
@@ -367,9 +395,11 @@ namespace Awaken.Contracts.PoolTwoContract
             return new Empty();
         }
 
-        /**
-         * 
-         */
+        /// <summary>
+        /// Fix end block number.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public override Empty FixEndBlock(BoolValue input)
         {
             AssertSenderIsOwner();

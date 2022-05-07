@@ -27,9 +27,9 @@ namespace Awaken.Contracts.PoolTwo
         
         
         // constants
-        private const string DISTRIBUTETOKEN = "AWAKEN";
-        private const string LPTOKEN_01 = "AAAE";
-        private const string LPTOKEN_02 = "AAAB";
+        private const string Distributetoken = "AWAKEN";
+        private const string LpToken01 = "AAAE";
+        private const string LpToken02 = "AAAB";
         private const long HalvingPeriod = 500;
         
         
@@ -46,7 +46,7 @@ namespace Awaken.Contracts.PoolTwo
             await stub.Initialize.SendAsync(new InitializeInput
             {
                 Owner = Owner,
-                DistributeToken = DISTRIBUTETOKEN,
+                DistributeToken = Distributetoken,
                 HalvingPeriod = HalvingPeriod,
                 StartBlock = 50,
                 TotalReward = 9375000,
@@ -75,17 +75,17 @@ namespace Awaken.Contracts.PoolTwo
             await tokenStub.Create.SendAsync(new CreateInput
             {
                 Decimals = 5,
-                Symbol = DISTRIBUTETOKEN,
+                Symbol = Distributetoken,
                 Issuer = Owner,
                 IsBurnable = true,
-                TokenName = DISTRIBUTETOKEN,
+                TokenName = Distributetoken,
                 TotalSupply = 1000000000000
             });
 
             await tokenStub.Issue.SendAsync(new IssueInput
             {
                 Amount = 1000000000000,
-                Symbol = DISTRIBUTETOKEN,
+                Symbol = Distributetoken,
                 To = Owner
             });
 
@@ -93,7 +93,7 @@ namespace Awaken.Contracts.PoolTwo
             await tokenStub.Transfer.SendAsync(new TransferInput
             {
                     Amount = 9375000,
-                    Symbol = DISTRIBUTETOKEN,
+                    Symbol = Distributetoken,
                     To = DAppContractAddress
             });
 
@@ -103,16 +103,16 @@ namespace Awaken.Contracts.PoolTwo
             {
                 Decimals = 6,
                 Issuer = Owner,
-                Symbol = LPTOKEN_01,
+                Symbol = LpToken01,
                 IsBurnable = true,
-                TokenName = LPTOKEN_01,
+                TokenName = LpToken01,
                 TotalSupply = 10000000000000,
             });
 
             await lpTokenStub.Issue.SendAsync(new Token.IssueInput
             {
                 Amount = 10000000000000,
-                Symbol = LPTOKEN_01,
+                Symbol = LpToken01,
                 To = Owner
             });
             
@@ -123,7 +123,7 @@ namespace Awaken.Contracts.PoolTwo
             await lpTokenStub.Transfer.SendAsync(new Token.TransferInput
             {
                 Amount = 10000000000,
-                Symbol = LPTOKEN_01,
+                Symbol = LpToken01,
                 To = Tom
             });
 
@@ -131,7 +131,7 @@ namespace Awaken.Contracts.PoolTwo
             await lpTokenStub.Transfer.SendAsync(new Token.TransferInput
             {
                 Amount = 10000000000,
-                Symbol = LPTOKEN_01,
+                Symbol = LpToken01,
                 To = PoolOneMock
             });
             
@@ -139,16 +139,16 @@ namespace Awaken.Contracts.PoolTwo
             {
                 Decimals = 5,
                 Issuer = Owner,
-                Symbol = LPTOKEN_02,
+                Symbol = LpToken02,
                 IsBurnable = true,
-                TokenName = LPTOKEN_02,
+                TokenName = LpToken02,
                 TotalSupply = 100000000000000
             });
 
             await lpTokenStub.Issue.SendAsync(new Token.IssueInput
             {
                 Amount = 100000000000000,
-                Symbol = LPTOKEN_02,
+                Symbol = LpToken02,
                 To = Owner
             });
         }
@@ -179,7 +179,7 @@ namespace Awaken.Contracts.PoolTwo
             {
                 await tokenStub.Transfer.SendAsync(new Token.TransferInput
                 {
-                    Symbol = LPTOKEN_02,
+                    Symbol = LpToken02,
                     Amount = 1,
                     To = Tom
                 });

@@ -94,7 +94,7 @@ namespace Awaken.Contracts.PoolTwo
                 var callAsync = await stub.RedepositAdjustFlag.CallAsync(new Empty());
                 callAsync.Value.ShouldBe(true);
                 var blockCallAsync = await stub.EndBlock.CallAsync(new Empty());
-                blockCallAsync.Value.ShouldBe(3153L);
+                blockCallAsync.Value.ShouldBe(1840L);
             }
             
             await poolOneLpContractStub.Approve.SendAsync(new ApproveInput
@@ -182,7 +182,7 @@ namespace Awaken.Contracts.PoolTwo
                 callAsync.Value.ShouldBe(true);
 
                 var blockCallAsync = await ownerStub.EndBlock.CallAsync(new Empty());
-                blockCallAsync.Value.ShouldBe(2556L);
+                blockCallAsync.Value.ShouldBe(2303L);
             }
             {
                 var balanceCallAsync = tomTokenContractStub.GetBalance.CallAsync(new GetBalanceInput
@@ -258,9 +258,9 @@ namespace Awaken.Contracts.PoolTwo
 
             {
                 var blockHeight = await GetCurrentBlockHeight();
-                var skipsBlock = 2556L - blockHeight;
+                var skipsBlock = 2303L - blockHeight;
                 var skipBlocks = await SkipBlocks(skipsBlock);
-                skipBlocks.ShouldBe(2556L);
+                skipBlocks.ShouldBe(2303L);
 
                 {
                     await tomPoolStub.Withdraw.SendAsync(new WithdrawInput
@@ -287,16 +287,13 @@ namespace Awaken.Contracts.PoolTwo
 
                     {
                         var blockCallAsync = await tomPoolStub.EndBlock.CallAsync(new Empty());
-                        blockCallAsync.Value.ShouldBe(0);
+                        blockCallAsync.Value.ShouldBe(2303L);
                     }
 
+
                     {
-                        var balanceCallAsync = tomTokenContractStub.GetBalance.CallAsync(new GetBalanceInput
-                        {
-                            Owner = DAppContractAddress,
-                            Symbol = Distributetoken
-                        });
-                        balanceCallAsync.Result.Balance.ShouldBe(0);
+                        var issuedRewardCallAsync = await tomPoolStub.IssuedReward.CallAsync(new Empty());
+                        issuedRewardCallAsync.Value.ShouldBe("9374998");
                     }
                 }
 
@@ -313,42 +310,6 @@ namespace Awaken.Contracts.PoolTwo
             await AddPoolFunc(ownerStub, allocPoint, PoolTwoContractTests.LpToken01, true);
             var totalAllocPoint = await ownerStub.TotalAllocPoint.CallAsync(new Empty());
             ShouldBeTestExtensions.ShouldBe<long>(totalAllocPoint.Value, 20);
-            
-        }
-        
-        
-        [Fact]
-        public async Task Pool_One_Test()
-        {
-            var ownerStub = await Initialize();
-            var allocPoint = 10;
-            await ownerStub.SetFarmPoolOne.SendAsync(PoolOneMock);
-            
-            await AddPoolFunc(ownerStub, allocPoint, PoolTwoContractTests.LpToken01, false);
-            await AddPoolFunc(ownerStub, allocPoint, PoolTwoContractTests.LpToken01, true);
-            var poolTwoContractStub = GetPoolTwoContractStub(PoolOneMockPair);
-            var tokenContractStub = GetLpTokenContractStub(PoolOneMockPair);
-            await tokenContractStub.Approve.SendAsync(new Token.ApproveInput
-            {
-                Amount = 10000000,
-                Spender = DAppContractAddress,
-                Symbol = PoolTwoContractTests.LpToken01
-            });
-            
-            await poolTwoContractStub.ReDeposit.SendAsync(new ReDepositInput
-            {
-                Amount = 10000000,
-                User = Tom
-            });
-
-            var tomPoolTwoStub = GetPoolTwoContractStub(TomPair);
-            var userInfo = await tomPoolTwoStub.UserInfo.CallAsync(new UserInfoInput
-            {
-                Pid = 1,
-                User = Tom
-            });
-            userInfo.Amount.ShouldBe(10000000);
-            
             
         }
         

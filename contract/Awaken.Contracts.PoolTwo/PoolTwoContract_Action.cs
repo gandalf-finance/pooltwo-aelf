@@ -412,23 +412,12 @@ namespace Awaken.Contracts.PoolTwoContract
 
             if (!State.RedepositAdjustFlag.Value && Context.CurrentHeight >= State.RedepositStartBlock.Value)
             {
-                var unDividendAmount = ComputationRedepositPoolUnDividendAmount();
-                restReward=restReward.Add(unDividendAmount);
                 State.RedepositAdjustFlag.Value = true;
             }
 
             var blockHeightEnd = GetEndBlock(restReward);
             State.EndBlock.Value = blockHeightEnd;
             return new Empty();
-        }
-        
-        private BigIntValue ComputationRedepositPoolUnDividendAmount()
-        {
-            var pool = State.PoolInfo.Value.PoolList[0];
-            var distributeTokenBlockReward =
-                GetDistributeTokenBlockReward(State.StartBlock.Value, State.RedepositStartBlock.Value);
-            var poolUnDividendAmount = distributeTokenBlockReward.Mul(pool.AllocPoint).Div(State.TotalAllocPoint.Value);
-            return poolUnDividendAmount;
         }
 
         private long GetEndBlock(BigIntValue restReward)

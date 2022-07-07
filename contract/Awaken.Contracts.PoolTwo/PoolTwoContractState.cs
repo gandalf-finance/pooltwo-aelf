@@ -9,6 +9,9 @@ namespace Awaken.Contracts.PoolTwoContract
     public partial class PoolTwoContractState : ContractState
     {
         public SingletonState<Address> Owner { get; set; }
+        
+        public SingletonState<Address> Admin { get; set; }
+        
         public Int64State StartBlock { get; set; }
         
         public Int64State RedepositStartBlock { get; set; }

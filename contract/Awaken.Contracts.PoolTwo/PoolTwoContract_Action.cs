@@ -15,7 +15,7 @@ namespace Awaken.Contracts.PoolTwoContract
         /// <returns></returns>
         public override Empty SetLpTokenAddress(SetLpTokenAddressInput input)
         {
-            AssertSenderIsOwner();
+            AssertSenderIsAdmin();
             Assert(input.AwakenTokenContractAddress != null && !new Address().Equals(input.AwakenTokenContractAddress),
                 "Invalid input.");
             State.LpTokenContract.Value = input.AwakenTokenContractAddress;
@@ -215,7 +215,7 @@ namespace Awaken.Contracts.PoolTwoContract
         /// <returns></returns>
         public override Empty Set(SetInput input)
         {
-            AssertSenderIsOwner();
+            AssertSenderIsAdmin();
             if (input.WithUpdate)
             {
                 MassUpdatePools(new Empty());
@@ -249,7 +249,7 @@ namespace Awaken.Contracts.PoolTwoContract
         /// <returns></returns>
         public override Empty Add(AddInput input)
         {
-            AssertSenderIsOwner();
+            AssertSenderIsAdmin();
             Assert(!string.IsNullOrWhiteSpace(input.LpToken), "Token symbol null.");
             if (input.WithUpdate)
             {
@@ -287,7 +287,7 @@ namespace Awaken.Contracts.PoolTwoContract
         /// <returns></returns>
         public override Empty SetDistributeTokenPerBlock(Int64Value input)
         {
-            AssertSenderIsOwner();
+            AssertSenderIsAdmin();
             MassUpdatePools(new Empty());
             State.DistributeTokenPerBlock.Value = input.Value;
             return new Empty();
@@ -374,7 +374,7 @@ namespace Awaken.Contracts.PoolTwoContract
         /// <returns></returns>
         public override Empty SetFarmPoolOne(Address input)
         {
-            AssertSenderIsOwner();
+            AssertSenderIsAdmin();
             State.FarmPoolOne.Value = input;
             return new Empty();
         }
@@ -386,7 +386,7 @@ namespace Awaken.Contracts.PoolTwoContract
         /// <returns></returns>
         public override Empty SetHalvingPeriod(Int64Value input)
         {
-            AssertSenderIsOwner();
+            AssertSenderIsAdmin();
             State.HalvingPeriod.Value = input.Value;
             Context.Fire(new HalvingPeriodSet
             {
@@ -402,8 +402,28 @@ namespace Awaken.Contracts.PoolTwoContract
         /// <returns></returns>
         public override Empty FixEndBlock(BoolValue input)
         {
+            AssertSenderIsAdmin();
+            FixEndBlockInternal(input.Value);
+            return new Empty();
+        }
+
+        public override Empty SetOwner(Address input)
+        {
             AssertSenderIsOwner();
-            if (input.Value)
+            State.Owner.Value = input;
+            return new Empty(); 
+        }
+        
+        public override Empty SetAdmin(Address input)
+        {
+            AssertSenderIsAdmin();
+            State.Admin.Value = input;
+            return new Empty(); 
+        }
+
+        private void FixEndBlockInternal(bool isUpdate)
+        {
+            if (isUpdate)
             {
                 MassUpdatePools(new Empty());
             }
@@ -417,9 +437,7 @@ namespace Awaken.Contracts.PoolTwoContract
 
             var blockHeightEnd = GetEndBlock(restReward);
             State.EndBlock.Value = blockHeightEnd;
-            return new Empty();
         }
-
         private long GetEndBlock(BigIntValue restReward)
         {
             var blockHeightBegin = Context.CurrentHeight > State.StartBlock.Value

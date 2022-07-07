@@ -16,7 +16,8 @@ namespace Awaken.Contracts.PoolTwoContract
         public override Empty Initialize(InitializeInput input)
         {
             Assert(State.Owner.Value == null, "Already initialized.");
-            State.Owner.Value = input.Owner == null || input.Owner.Value.IsNullOrEmpty() ? Context.Sender : input.Owner;
+            State.Owner.Value = Context.Sender;
+            State.Admin.Value = input.Admin == null || input.Admin.Value.IsNullOrEmpty() ? Context.Sender : input.Admin;
             Assert(input.StartBlock >= Context.CurrentHeight,"Invalid StartBlock.");
             State.DistributeToken.Value = input.DistributeToken;
             State.DistributeTokenPerBlock.Value = input.DistributeTokenPerBlock;
@@ -31,17 +32,20 @@ namespace Awaken.Contracts.PoolTwoContract
                 Context.GetContractAddressByName(SmartContractConstants.TokenContractSystemName);
             State.PoolInfo.Value = new PoolInfo();
             State.LpTokenContract.Value = input.AwakenTokenContract;
-            
-            FixEndBlock(new BoolValue
-            {
-                Value = false
-            });
+
+            FixEndBlockInternal(false);
             return new Empty(); 
         }
         
         /// <summary>
         /// Authority guard
         /// </summary>
+        private void AssertSenderIsAdmin()
+        {
+            Assert(State.Admin.Value != null, "Contract not initialized.");
+            Assert(Context.Sender == State.Admin.Value, "Not Admin.");
+        }
+        
         private void AssertSenderIsOwner()
         {
             Assert(State.Owner.Value != null, "Contract not initialized.");

@@ -48,6 +48,10 @@ service PoolTwoContract {
   
   rpc SetLpTokenAddress(SetLpTokenAddressInput) returns(google.protobuf.Empty){}
   
+  rpc SetOwner(aelf.Address) returns (google.protobuf.Empty) {}
+  
+  rpc SetAdmin(aelf.Address) returns (google.protobuf.Empty) {}
+  
   //  View
   rpc PoolLength(google.protobuf.Empty) returns(google.protobuf.Int64Value){
     option (aelf.is_view) = true;
@@ -171,7 +175,7 @@ message InitializeInput{
   int64 halving_period = 3;
   int64 start_block = 4;
   aelf.BigIntValue  total_reward = 5;
-  aelf.Address owner = 6;
+  aelf.Address admin = 6;
   aelf.Address awaken_token_contract =7;
   int64 redeposit_start_block=8;
 }

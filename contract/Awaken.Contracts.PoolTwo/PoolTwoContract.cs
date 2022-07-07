@@ -36,7 +36,7 @@ namespace Awaken.Contracts.PoolTwoContract
             {
                 Value = false
             });
-            return new Empty();
+            return new Empty(); 
         }
         
         /// <summary>

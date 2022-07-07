@@ -35,7 +35,7 @@ namespace Awaken.Contracts.PoolTwo
             long redepositStartBlock = 513;
             await stub.Initialize.SendAsync(new InitializeInput
             {
-                Owner = Owner,
+                Admin = Owner,
                 DistributeToken = Distributetoken,
                 HalvingPeriod = 180,
                 StartBlock = 453,

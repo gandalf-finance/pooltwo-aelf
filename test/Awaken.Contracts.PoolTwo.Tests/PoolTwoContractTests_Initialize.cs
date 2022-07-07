@@ -45,7 +45,7 @@ namespace Awaken.Contracts.PoolTwo
             var stub = GetPoolTwoContractStub(OwnerPair);
             await stub.Initialize.SendAsync(new InitializeInput
             {
-                Owner = Owner,
+                Admin = Owner,
                 DistributeToken = Distributetoken,
                 HalvingPeriod = HalvingPeriod,
                 StartBlock = 50,
